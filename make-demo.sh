@@ -84,42 +84,7 @@ cp -r ../rnfbdemo.xcworkspace ios/
 # First set up all the modules that need no further config for the demo 
 echo "Adding packages: Analytics, Auth, Database, Dynamic Links, Firestore, Functions, Instance-ID, In App Messaging, Remote Config, Storage"
 yarn add \
-  @react-native-firebase/auth \
-  @react-native-firebase/database \
-  @react-native-firebase/dynamic-links \
-  @react-native-firebase/firestore \
-  @react-native-firebase/functions \
-  @react-native-firebase/iid \
-  @react-native-firebase/in-app-messaging \
-  @react-native-firebase/messaging \
-  @react-native-firebase/remote-config \
-  @react-native-firebase/storage
-
-# Crashlytics - repo, classpath, plugin, dependency, import, init
-echo "Setting up Crashlytics - package, gradle plugin"
-yarn add "@react-native-firebase/crashlytics"
-sed -i -e $'s/dependencies {/dependencies {\\\n        classpath "com.google.firebase:firebase-crashlytics-gradle:2.2.0"/' android/build.gradle
-rm -f android/build.gradle??
-sed -i -e $'s/"com.google.gms.google-services"/"com.google.gms.google-services"\\\napply plugin: "com.google.firebase.crashlytics"/' android/app/build.gradle
-rm -f android/app/build.gradle??
-
-# Performance - classpath, plugin, dependency, import, init
-echo "Setting up Performance - package, gradle plugin"
-yarn add "@react-native-firebase/perf"
-rm -f android/app/build.gradle??
-sed -i -e $'s/dependencies {/dependencies {\\\n        classpath "com.google.firebase:perf-plugin:1.3.1"/' android/build.gradle
-rm -f android/build.gradle??
-sed -i -e $'s/"com.android.application" {/"com.android.application"\\\napply plugin: "com.google.firebase.firebase-perf"/' android/app/build.gradle
-rm -f android/app/build.gradle??
-
-# I'm not going to demonstrate messaging and notifications. Everyone gets it wrong because it's hard. 
-# You've got to read the docs and test *EVERYTHING* one feature at a time.
-# But you have to do a *lot* of work in the AndroidManifest.xml, and make sure your MainActivity *is* the launch intent receiver
-# I include it for compile testing only.
-
-# I am not going to demonstrate shortcut badging. Shortcut badging on Android is a terrible idea to rely on.
-# Only use it if the feature is "nice to have" but you're okay with it being terrible. It's an Android thing, not a react-native-firebase thing.
-# (Pixel Launcher won't do it, launchers have to grant permissions, it is vendor specific, Material Design says no, etc etc)
+  @react-native-firebase/dynamic-links
 
 echo "Creating default firebase.json (with settings that allow iOS crashlytics to report crashes even in debug mode)"
 printf "{\n  \"react-native\": {\n    \"crashlytics_disable_auto_disabler\": true,\n    \"crashlytics_debug_enabled\": true\n  }\n}" > firebase.json
@@ -127,54 +92,6 @@ printf "{\n  \"react-native\": {\n    \"crashlytics_disable_auto_disabler\": tru
 # Copy in our demonstrator App.js
 echo "Copying demonstrator App.js"
 rm ./App.js && cp ../App.js ./App.js
-
-
-if [ "$NOIDFA" == "false" ]; then
-  echo "Adding IDFA-containing packages: Analytics, AdMob"
-  yarn add \
-    @react-native-firebase/analytics \
-    @react-native-firebase/admob
-
-  # Set up AdMob
-  echo "Configuring up AdMob - adding test AdMob IDs in firebase.json"
-  # Set up an AdMob ID (this is the official "sample id")
-  sed -i -e $'s/"react-native": {/"react-native": {\\\n    "admob_android_app_id": \"ca-app-pub-3940256099942544~3347511713\",/' firebase.json
-  rm -f firebase.json??
-  sed -i -e $'s/"react-native": {/"react-native": {\\\n    "admob_ios_app_id": \"ca-app-pub-3940256099942544~1458002511\",/' firebase.json
-  rm -f firebase.json??
-
-  # Add AdMob and Analytics to the example
-  echo "Adding Analytics and AdMob to example App.js"
-  sed -i -e $'s/import auth/import analytics from \'@react-native-firebase\/analytics\';\\\nimport auth/' App.js
-  rm -f App.js??
-  sed -i -e $'s/import auth/import admob from \'@react-native-firebase\/admob\';\\\nimport auth/' App.js
-  rm -f App.js??
-  sed -i -e $'s/{auth()\.native/{analytics\(\)\.native \&\& <Text style={styles\.module}>analytics\(\)<\/Text>}\\\n        {auth\(\)\.native/' App.js
-  rm -f App.js??
-  sed -i -e $'s/{auth()\.native/{admob\(\)\.native \&\& <Text style={styles\.module}>admob\(\)<\/Text>}\\\n        {auth\(\)\.native/' App.js
-  rm -f App.js??
-fi
-
-# Add in the ML Kits and configure them
-echo "Setting up ML Vision - package and firebase.json model toggles in firebase.json"
-yarn add "@react-native-firebase/ml-vision"
-sed -i -e $'s/"react-native": {/"react-native": {\\\n    "ml_vision_face_model": true,/' firebase.json
-rm -f firebase.json??
-sed -i -e $'s/"react-native": {/"react-native": {\\\n    "ml_vision_ocr_model": true,/' firebase.json
-rm -f firebase.json??
-sed -i -e $'s/"react-native": {/"react-native": {\\\n    "ml_vision_barcode_model": true,/' firebase.json
-rm -f firebase.json??
-sed -i -e $'s/"react-native": {/"react-native": {\\\n    "ml_vision_label_model": true,/' firebase.json
-rm -f firebase.json??
-sed -i -e $'s/"react-native": {/"react-native": {\\\n    "ml_vision_image_label_model": true,/' firebase.json
-rm -f firebase.json??
-
-echo "Setting up ML Natural Language - package and firebase.json model toggles in firebase.json"
-yarn add "@react-native-firebase/ml-natural-language"
-sed -i -e $'s/"react-native": {/"react-native": {\\\n    "ml_natural_language_id_model": true,/' firebase.json
-rm -f firebase.json??
-sed -i -e $'s/"react-native": {/"react-native": {\\\n    "ml_natural_language_smart_reply_model": true,/' firebase.json
-rm -f firebase.json??
 
 # Set the Java application up for multidex (needed for API<21 w/Firebase)
 echo "Configuring Android MultiDex for API<21 support - gradle toggle, library dependency, Application object inheritance"
